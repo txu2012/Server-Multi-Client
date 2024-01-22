@@ -1,3 +1,5 @@
+package Server;
+
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -13,7 +15,7 @@ public class ServerThread extends Thread {
 
     public void run() {
         try {
-            System.out.println("New Server Thread "+clientIndex+" Started.");
+            System.out.println("New Server. Server Thread "+clientIndex+" Started.");
 
             DataInputStream dis = new DataInputStream(socket.getInputStream()); // For reading from client
             DataOutputStream dos = new DataOutputStream(socket.getOutputStream());
