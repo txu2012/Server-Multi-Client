@@ -7,6 +7,8 @@ public class Server {
 
     public static void main(String[] args) {
         try {
+            ServerUI ui = new ServerUI();
+            ui.initialize();
             // Create server
             ServerSocket server = new ServerSocket(5555);
 
@@ -15,17 +17,18 @@ public class Server {
                 try {
                     Socket socket = server.accept();
 
-                    ServerThread newThread = new ServerThread(socket, i);
+                    ServerThread newThread = new ServerThread(ui, socket, i);
                     newThread.start();
 
-                    System.out.println("Client "+i+" established.");
+                    ui.Append("Client "+i+" established.");
                     i++;
                 } catch (IOException e) {
-                    System.out.println(e);
+                    ui.Append(e.getMessage());
                 }
             }
         } catch(Exception e) {
             System.out.println(e);
+            System.exit(0);
         }
     }
 }

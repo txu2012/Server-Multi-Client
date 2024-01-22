@@ -5,17 +5,19 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 public class ServerThread extends Thread {
+    private ServerUI ui = null;
     private Socket socket = null;
     private int clientIndex;
 
-    public ServerThread(Socket s, int idx) {
+    public ServerThread(ServerUI ui, Socket s, int idx) {
+        this.ui = ui;
         this.socket = s;
         this.clientIndex = idx;
     }
 
     public void run() {
         try {
-            System.out.println("New Server. Server Thread "+clientIndex+" Started.");
+            ui.Append("New Server. Server Thread "+clientIndex+" Started.");
 
             DataInputStream dis = new DataInputStream(socket.getInputStream()); // For reading from client
             DataOutputStream dos = new DataOutputStream(socket.getOutputStream());
@@ -23,15 +25,15 @@ public class ServerThread extends Thread {
 
             while (!clientMsg.equals("quit")) {
                 clientMsg = (String)dis.readUTF();
-                System.out.println("Client "+clientIndex+" message = "+clientMsg);
+                ui.Append("Client "+clientIndex+" message = "+clientMsg);
 
-                dos.writeUTF("Message Received.");
+                dos.writeUTF("Message Received: " + clientMsg);
                 dos.flush();
             }
 
             socket.close();
         } catch (IOException ioe) {
-            System.out.println(ioe);
+            ui.Append(ioe.getMessage());
         }
     }
 }
