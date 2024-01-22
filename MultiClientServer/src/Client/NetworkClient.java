@@ -10,7 +10,7 @@ public class NetworkClient {
         ClientSocket client = null;
         BlockingQueue queue = new LinkedBlockingDeque<String>();
         try {
-            client = new ClientSocket("localhost", 5555, queue);
+            client = new ClientSocket("127.0.0.1", 5555, queue);
             client.initialize();
         } catch (IOException e) {
             System.out.println("Failed to initialize Client. " + e);
