@@ -2,10 +2,12 @@ package Client;
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
+import javax.swing.filechooser.FileSystemView;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.BlockingQueue;
 
@@ -26,6 +28,7 @@ public class ClientUI implements ActionListener {
 
     // Client Fields for sending
     private JButton open_btn = null;
+    private JFileChooser chooser = null;
     private JTextField send_field = null;
     private JButton send_btn = null;
 
@@ -49,6 +52,7 @@ public class ClientUI implements ActionListener {
         ui = new JFrame("Client");
         ui.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         ui.setSize(400,400);
+        ui.setResizable(false);
 
         panel = new JPanel(new GridBagLayout());
         panel.setBorder(new TitledBorder(new EtchedBorder(), "Server Responses"));
@@ -143,6 +147,21 @@ public class ClientUI implements ActionListener {
 
                 this.disconnect();
             }
+        } else if (event.getSource().equals(open_btn)) {
+            String desktop_dir = FileSystemView.getFileSystemView().getHomeDirectory().getAbsolutePath();
+
+            chooser = new JFileChooser();
+            chooser.setCurrentDirectory(new java.io.File(desktop_dir));
+            chooser.setDialogTitle("Select File");
+            chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+            //
+            if (chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
+                display.append("getCurrentDirectory(): " +  chooser.getCurrentDirectory() + "\n");
+                display.append("getSelectedFile() : " +  chooser.getSelectedFile() + "\n");
+            }
+            else {
+                System.out.println("No Selection ");
+            }
         }
     }
 
@@ -163,6 +182,7 @@ public class ClientUI implements ActionListener {
             port_field.setEnabled(true);
             connect_btn.setText("Connect");
 
+            open_btn.setEnabled(false);
             send_btn.setEnabled(false);
             send_field.setEnabled(false);
         } else {
@@ -170,6 +190,7 @@ public class ClientUI implements ActionListener {
             port_field.setEnabled(false);
             connect_btn.setText("Disconnect");
 
+            open_btn.setEnabled(true);
             send_btn.setEnabled(true);
             send_field.setEnabled(true);
         }
