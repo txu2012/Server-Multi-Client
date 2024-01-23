@@ -25,7 +25,8 @@ public class ClientUI implements ActionListener {
     private JScrollPane scroll = null;
 
     // Client Fields for sending
-    private JTextField user_msg = null;
+    private JButton open_btn = null;
+    private JTextField send_field = null;
     private JButton send_btn = null;
 
     // Client socket
@@ -52,47 +53,24 @@ public class ClientUI implements ActionListener {
         panel = new JPanel(new GridBagLayout());
         panel.setBorder(new TitledBorder(new EtchedBorder(), "Server Responses"));
 
-        GridBagConstraints c = new GridBagConstraints();
-
         host_label = new JLabel("Host: ");
-        c.gridx = 0;
-        c.gridwidth = 1;
-        c.gridy = 0;
-        c.gridheight = 1;
-        panel.add(host_label, c);
+        panel.add(host_label, getConstraints(0, 0, 1, 1, GridBagConstraints.CENTER, GridBagConstraints.NONE));
 
         host_field = new JTextField(8);
         host_field.setText(this.host);
-        c.gridx = 1;
-        c.gridwidth = 1;
-        c.gridy = 0;
-        c.gridheight = 1;
-        panel.add(host_field, c);
+        panel.add(host_field, getConstraints(1, 0, 1, 1, GridBagConstraints.CENTER, GridBagConstraints.NONE));
 
         port_label = new JLabel("Port: ");
-        c.gridx = 2;
-        c.gridwidth = 1;
-        c.gridy = 0;
-        c.gridheight = 1;
-        panel.add(port_label, c);
+        panel.add(port_label, getConstraints(2, 0, 1, 1, GridBagConstraints.WEST, GridBagConstraints.NONE));
 
-        port_field = new JTextField(5);
+        port_field = new JTextField(3);
         port_field.setText(Integer.toString(this.port));
-        c.gridx = 3;
-        c.gridwidth = 1;
-        c.gridy = 0;
-        c.gridheight = 1;
-        panel.add(port_field, c);
+        panel.add(port_field, getConstraints(3, 0, 1, 1, GridBagConstraints.WEST, GridBagConstraints.NONE));
 
         connect_btn = new JButton("Connect");
         connect_btn.addActionListener(this);
-        c.fill = GridBagConstraints.HORIZONTAL;
-        c.anchor = GridBagConstraints.EAST;
-        c.gridx = 4;
-        c.gridy = 0;
-        c.gridwidth = 1;
-        c.gridheight = 1;
-        panel.add(connect_btn, c);
+        connect_btn.setPreferredSize(new Dimension(30, 20));
+        panel.add(connect_btn, getConstraints(4, 0, 1, 1, GridBagConstraints.EAST, GridBagConstraints.HORIZONTAL));
 
         display = new JTextArea(20, 30);
         display.setEditable(false);
@@ -100,31 +78,22 @@ public class ClientUI implements ActionListener {
 
         scroll = new JScrollPane (display);
         scroll.setVerticalScrollBarPolicy (ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
-        c.fill = GridBagConstraints.HORIZONTAL;
-        c.anchor = GridBagConstraints.CENTER;
-        c.gridx = 0;
-        c.gridwidth = 5;
-        c.gridy = 1;
-        c.gridheight = 3;
-        panel.add(scroll, c);
+        panel.add(scroll, getConstraints(0, 1, 5, 3, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL));
 
-        user_msg = new JTextField(20);
-        user_msg.addActionListener(this);
-        c.gridx = 0;
-        c.gridwidth = 4;
-        c.gridy = 4;
-        c.gridheight = 1;
-        panel.add(user_msg, c);
+        Icon open_icon = new ImageIcon(System.getProperty("user.dir")+"\\resources\\openfolder.png");
+        open_btn = new JButton(open_icon);
+        open_btn.addActionListener(this);
+        open_btn.setPreferredSize(new Dimension(20, 20));
+        panel.add(open_btn, getConstraints(0, 4, 1, 1, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL));
+
+        send_field = new JTextField(18);
+        send_field.addActionListener(this);
+        panel.add(send_field, getConstraints(1, 4, 3, 1, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL));
 
         send_btn = new JButton("Send");
         send_btn.addActionListener(this);
-        c.fill = GridBagConstraints.HORIZONTAL;
-        c.anchor = GridBagConstraints.CENTER;
-        c.gridx = 4;
-        c.gridy = 4;
-        c.gridwidth = 1;
-        c.gridheight = 1;
-        panel.add(send_btn, c);
+        send_btn.setPreferredSize(new Dimension(30, 20));
+        panel.add(send_btn, getConstraints(4, 4, 1, 1, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL));
 
         ui.add(panel);
         ui.pack();
@@ -134,9 +103,25 @@ public class ClientUI implements ActionListener {
         toggleConnectionFields(true);
     }
 
+    private GridBagConstraints getConstraints(int gridx, int gridy, int gridwidth, int gridheight, int anchor, int fill)
+    {
+        GridBagConstraints c = new GridBagConstraints();
+
+        c.insets = new Insets(1, 1, 1, 1);
+        c.ipadx = 5;
+        c.ipady = 0;
+        c.gridx = gridx;
+        c.gridy = gridy;
+        c.gridwidth = gridwidth;
+        c.gridheight = gridheight;
+        c.anchor = anchor;
+        c.fill = fill;
+        return c;
+    }
+
     public void actionPerformed (ActionEvent event) {
-        if (event.getSource().equals(send_btn) || event.getSource().equals(user_msg)) {
-            this.sendMsg(user_msg.getText());
+        if (event.getSource().equals(send_btn) || event.getSource().equals(send_field)) {
+            this.sendMsg(send_field.getText());
         } else if (event.getSource().equals(connect_btn)) {
             if (connect_btn.getText().equals("Connect")) {
                 try {
@@ -169,7 +154,7 @@ public class ClientUI implements ActionListener {
 
     private void sendMsg(String msg) {
         socket.Send(msg);
-        user_msg.setText("");
+        send_field.setText("");
     }
 
     private void toggleConnectionFields(boolean toggle) {
@@ -179,14 +164,14 @@ public class ClientUI implements ActionListener {
             connect_btn.setText("Connect");
 
             send_btn.setEnabled(false);
-            user_msg.setEnabled(false);
+            send_field.setEnabled(false);
         } else {
             host_field.setEnabled(false);
             port_field.setEnabled(false);
             connect_btn.setText("Disconnect");
 
             send_btn.setEnabled(true);
-            user_msg.setEnabled(true);
+            send_field.setEnabled(true);
         }
     }
 
