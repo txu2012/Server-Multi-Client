@@ -9,16 +9,10 @@ public class NetworkClient {
     public static void main(String[] args) {
         ClientSocket client = null;
         BlockingQueue queue = new LinkedBlockingDeque<String>();
-        try {
-            client = new ClientSocket("127.0.0.1", 5555, queue);
-            client.initialize();
-        } catch (IOException e) {
-            System.out.println("Failed to initialize Client. " + e);
-            System.exit(0);
-        }
+        client = new ClientSocket(queue);
+
         ClientUI ui = new ClientUI(client, queue);
 
         ui.initialize();
-        ui.Start();
     }
 }

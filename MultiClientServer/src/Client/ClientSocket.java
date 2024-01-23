@@ -14,14 +14,14 @@ public class ClientSocket {
     private BlockingQueue<String> receiveQueue;
     public boolean isConnected = false;
 
-    public ClientSocket(String host, int port, BlockingQueue queue) throws IOException {
-        this.host = host;
-        this.port = port;
-
+    public ClientSocket(BlockingQueue queue) {
         receiveQueue = queue;
     }
-    public void initialize() throws IOException {
-
+    public void setPortHost(String host, int port) {
+        this.host = host;
+        this.port = port;
+    }
+    public void connect() throws IOException {
         try {
             clientSocket = new Socket(this.host, this.port); // Create socket with host and port
             dos = new DataOutputStream(this.clientSocket.getOutputStream());
@@ -33,11 +33,23 @@ public class ClientSocket {
         }
     }
 
+    public void disconnect() {
+        try {
+            this.dos.close();
+            this.clientSocket.close();
+            isConnected = clientSocket.isConnected();
+        } catch (IOException ie) {
+            System.out.println("Failed to disconnect from server. " + ie);
+        }
+    }
+
     public void Send(String input) {
         try {
             this.dos.writeUTF(input);
         } catch (IOException e) {
             System.out.println("Error sending to server. " + e);
+        } catch (NullPointerException npe) {
+            System.out.println("Not connected to the server. " + npe);
         }
     }
 
@@ -57,8 +69,10 @@ public class ClientSocket {
                 receiveQueue.put(response);
             } catch (IOException e) {
                 System.out.println("Error receiving from server. " + e);
+                return;
             } catch (InterruptedException ex) {
                 ex.printStackTrace();
+                return;
             }
         }
     }
