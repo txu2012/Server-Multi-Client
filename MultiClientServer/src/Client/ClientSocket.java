@@ -48,6 +48,7 @@ public class ClientSocket {
             this.dos.writeUTF(input);
         } catch (IOException e) {
             System.out.println("Error sending to server. " + e);
+
         } catch (NullPointerException npe) {
             System.out.println("Not connected to the server. " + npe);
         }
@@ -67,11 +68,16 @@ public class ClientSocket {
             try {
                 response = dis.readUTF();
                 receiveQueue.put(response);
-            } catch (IOException e) {
-                System.out.println("Error receiving from server. " + e);
-                return;
             } catch (InterruptedException ex) {
                 ex.printStackTrace();
+                return;
+            } catch (IOException e) {
+                System.out.println("Error receiving from server. " + e);
+                if (e instanceof EOFException) {
+                    try {
+                        receiveQueue.put("SERVER CLOSED");
+                    } catch (InterruptedException ie) { }
+                }
                 return;
             }
         }

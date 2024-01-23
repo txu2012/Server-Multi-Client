@@ -13,8 +13,8 @@ public class ClientUI implements ActionListener {
     private JFrame ui = null;
 
     // Setting IP and Connect
-    private JLabel ip_label = null;
-    private JTextField ip_field = null;
+    private JLabel host_label = null;
+    private JTextField host_field = null;
     private JLabel port_label = null;
     private JTextField port_field = null;
     private JButton connect_btn = null;
@@ -54,20 +54,20 @@ public class ClientUI implements ActionListener {
 
         GridBagConstraints c = new GridBagConstraints();
 
-        ip_label = new JLabel("Host: ");
+        host_label = new JLabel("Host: ");
         c.gridx = 0;
         c.gridwidth = 1;
         c.gridy = 0;
         c.gridheight = 1;
-        panel.add(ip_label, c);
+        panel.add(host_label, c);
 
-        ip_field = new JTextField(8);
-        ip_field.setText(this.host);
+        host_field = new JTextField(8);
+        host_field.setText(this.host);
         c.gridx = 1;
         c.gridwidth = 1;
         c.gridy = 0;
         c.gridheight = 1;
-        panel.add(ip_field, c);
+        panel.add(host_field, c);
 
         port_label = new JLabel("Port: ");
         c.gridx = 2;
@@ -136,13 +136,12 @@ public class ClientUI implements ActionListener {
 
     public void actionPerformed (ActionEvent event) {
         if (event.getSource().equals(send_btn) || event.getSource().equals(user_msg)) {
-            socket.Send(user_msg.getText());
-            user_msg.setText("");
+            this.sendMsg(user_msg.getText());
         } else if (event.getSource().equals(connect_btn)) {
             if (connect_btn.getText().equals("Connect")) {
                 try {
                     this.port = Integer.valueOf(port_field.getText());
-                    this.host = ip_field.getText();
+                    this.host = host_field.getText();
 
                     socket.setPortHost(this.host, this.port);
                     socket.connect();
@@ -155,23 +154,34 @@ public class ClientUI implements ActionListener {
                     display.append("Failed to connect to server. " + ie + "\n");
                 }
             } else {
-                toggleStart(false);
-                socket.disconnect();
-                toggleConnectionFields(true);
+                this.sendMsg("quit");
+
+                this.disconnect();
             }
         }
     }
 
+    private void disconnect() {
+        toggleStart(false);
+        socket.disconnect();
+        toggleConnectionFields(true);
+    }
+
+    private void sendMsg(String msg) {
+        socket.Send(msg);
+        user_msg.setText("");
+    }
+
     private void toggleConnectionFields(boolean toggle) {
         if (toggle) {
-            ip_field.setEnabled(true);
+            host_field.setEnabled(true);
             port_field.setEnabled(true);
             connect_btn.setText("Connect");
 
             send_btn.setEnabled(false);
             user_msg.setEnabled(false);
         } else {
-            ip_field.setEnabled(false);
+            host_field.setEnabled(false);
             port_field.setEnabled(false);
             connect_btn.setText("Disconnect");
 
@@ -182,12 +192,14 @@ public class ClientUI implements ActionListener {
 
     public void toggleStart(boolean toggle) {
         if (toggle) {
+            System.out.println("Toggle Start True: " + toggle);
             tReceive = new Thread(socket::Receive);
             tUpdateUI = new Thread(this::UpdateUI);
 
             tReceive.start();
             tUpdateUI.start();
         } else {
+            System.out.println("Toggle Start False: " + toggle);
             tReceive.interrupt();
             tUpdateUI.interrupt();
 
@@ -198,7 +210,14 @@ public class ClientUI implements ActionListener {
     private void UpdateUI() {
         while(socket.isConnected) {
             try {
-                display.append((String) queue.take() + "\n");
+                String response = (String)queue.take();
+                if (response.equals("SERVER CLOSED")) {
+                    display.append("Server has closed." + "\n");
+                    this.disconnect();
+                    return;
+                }
+
+                display.append(response + "\n");
             } catch (InterruptedException ex) {
                 System.out.println("Error Updating client UI. " + ex);
                 return;
